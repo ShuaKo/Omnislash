@@ -24,6 +24,7 @@ function Interface(){
 }
 
 function Player(a,b,x,y,scale){
+  this.health = 10;
   this.canMove = true;
   this.originX = a;
   this.originY = b;
@@ -32,7 +33,8 @@ function Player(a,b,x,y,scale){
   this.speedX = 0;
   this.speedY = 0;
   this.scale = scale;
-
+  this.color =  "#b3ffb3";
+  this.attackDirection = 3;
   this.setPosition = function(x,y){
     this.positionX = x;
     this.positionY = y;
@@ -41,12 +43,21 @@ function Player(a,b,x,y,scale){
     this.scale = value;
   }
   this.move = function(){
-    this.positionX+=this.speedX;
-    this.positionY+=this.speedY;
+    if(this.speedX <= 0)
+      if(this.positionX > 0)
+        this.positionX+=this.speedX;
+    if(this.speedX >= 0)
+      if(this.positionX < 20)
+        this.positionX+=this.speedX;
+    if(this.speedY <= 0)
+      if(this.positionY > 0)
+        this.positionY+=this.speedY;
+    if(this.speedY >= 0)
+      if(this.positionY < 10)
+        this.positionY+=this.speedY;
   }
   this.setSpeed = function(x,y){
     if(this.canMove){
-      this.canMove = false;
       this.speedX = x;
       this.speedY = y;
     }
@@ -54,11 +65,28 @@ function Player(a,b,x,y,scale){
   this.OnHit = function(){
     this.speedX = 0;
     this.speedY = 0;
-    this.canMove = true;
+  }
+  this.setColor = function(value){
+    this.color = value;
   }
   this.draw = function(){
-    ctx.fillStyle = "#b3ffb3";
+    ctx.fillStyle = this.color;
     ctx.fillRect(this.originX + (this.positionX * this.scale), this.originY + (this.positionY * this.scale), this.scale, this.scale);
+    ctx.fillStyle = "#555";
+    switch(this.attackDirection){
+      case 0://north
+        ctx.fillRect(this.originX + (this.positionX * this.scale) + (this.scale/3), this.originY + (this.positionY * this.scale), (this.scale/3), (this.scale/6));
+        break;
+      case 1://south
+        ctx.fillRect(this.originX + (this.positionX * this.scale) + (this.scale/3), this.originY + (this.positionY * this.scale)+(5*this.scale/6), (this.scale/3), (this.scale/6));
+        break;
+      case 2://west
+        ctx.fillRect(this.originX + (this.positionX * this.scale), this.originY + (this.positionY * this.scale) + (this.scale/3), (this.scale/6), (this.scale/3));
+        break;
+      case 3://east
+        ctx.fillRect(this.originX + (this.positionX * this.scale) + (5*this.scale/6), this.originY + (this.positionY * this.scale) + (this.scale/3), (this.scale/6), (this.scale/3));
+        break;
+    }
   }
 
 }
@@ -70,7 +98,8 @@ function Platform(){
   this.positionY = 0;
   this.scale = 40;
   this.floor = [];
-  this.Fighter = new Player(this.originX, this.originY, 2, 5, this.scale);
+  this.Fighter1 = new Player(this.originX, this.originY, 2, 5, this.scale);
+  this.Fighter2 = new Player(this.originX, this.originY, 16, 5, this.scale);
   this.enemies = [];
   this.enemySize = 0;
 
@@ -82,20 +111,9 @@ function Platform(){
     this.floor.push(temp);
   }
 
-  this.enemySpawn = function(x,y){
-    if(this.enemySize > 0)
-      if((this.Fighter.positionX == x && this.enemies[0].positionX == x)||(this.Fighter.positionY == y && this.enemies[0].positionY == y))
-        return true;
-    if(this.floor[x][y].isEnemy == false && !(this.Fighter.positionX == x && this.Fighter.positionY == y)){
-      this.enemies.push(new EnemyPosition(x, y));
-      this.floor[x][y].isEnemy = true;
-      this.enemySize++;
-      return true;
-    }
-    return false;
-  }
+  this.checkCollision = function(){
 
-  this.enemySpawn(16,5);
+  }
 
   this.setPosition = function(x,y){
     this.positionX = x;
@@ -105,90 +123,14 @@ function Platform(){
   this.setScale = function(value){
     this.scale = value;
   }
-
-  this.addEnemy = function(){
-    var addedEnemy = true;
-    var pos, last, next;
-    do{
-      if(this.enemySize > 0){
-        var posCheck = Math.floor((Math.random() * 2));
-        console.log("posCheck is " + posCheck);
-        console.log("EnemySize is" + this.enemySize);
-        switch(posCheck){
-          case 0:
-            if(this.enemySize > 1){
-              last = this.enemies[this.enemySize-1].positionX;
-              next = this.enemies[this.enemySize-2].positionX;
-            }
-            else{
-              last = this.enemies[this.enemySize-1].positionX;
-              next = this.Fighter.positionX;
-            }
-            console.log(last,next);
-            if(last > next && last < 20){
-              pos = last + 1 + Math.floor((Math.random() * 20)%(20-last));
-            }
-            else if(last < next && last > 0){
-              pos = Math.floor((Math.random() * last) );
-            }
-            else if(last == next){
-              pos = Math.floor((Math.random() * 20) + 0);
-            }
-            else {
-              pos = last;
-            }
-            console.log(pos);
-            if(this.enemySpawn(pos, this.enemies[this.enemySize-1].positionY))
-              addedEnemy = false;
-            break;
-          case 1:
-            if(this.enemySize > 1){
-              last = this.enemies[this.enemySize-1].positionY;
-              next = this.enemies[this.enemySize-2].positionY;
-            }
-            else{
-              last = this.enemies[this.enemySize-1].positionY;
-              next = this.Fighter.positionY;
-            }
-            console.log(last,next);
-            if(last > next && last < 10){
-              pos = last + 1 + Math.floor((Math.random() * 10)%(10-last));
-            }
-            else if(last < next && last > 0){
-              pos = Math.floor((Math.random() * last) );
-            }
-            else if(last == next){
-              pos = Math.floor((Math.random() * 10) + 0);
-            }
-            else {
-              pos = last;
-            }
-            console.log(pos);
-            if(this.enemySpawn(this.enemies[this.enemySize-1].positionX, pos))
-              addedEnemy = false;
-            break;
-        }
-      }
-    }while(addedEnemy);
-  }
-
-  this.checkCollision = function(){
-    if(this.floor[this.Fighter.positionX][this.Fighter.positionY].isEnemy ){
-      console.log("Bang");
-      this.floor[this.Fighter.positionX][this.Fighter.positionY].isEnemy = false;
-      this.enemySize--;
-      this.Fighter.OnHit();
-      if(this.Fighter.positionX == this.enemies[0].positionX && this.Fighter.positionY == this.enemies[0].positionY )
-        this.enemies.shift();
-    }
-  }
   this.draw = function(){
     for(var i = 0; i < 21; i++){
       for(var j = 0; j < 11; j++){
         this.floor[i][j].draw();
       }
     }
-    this.Fighter.draw();
+    this.Fighter1.draw();
+    this.Fighter2.draw();
   }
 }
 
@@ -218,9 +160,4 @@ function Tile(a,b,x,y,scale){
       ctx.fillRect(this.originX + (this.positionX * this.scale)+this.border, this.originY + (this.positionY * this.scale)+this.border, this.scale-(this.border * 2), this.scale-(this.border * 2));
     }
   }
-}
-
-function EnemyPosition(x,y){
-  this.positionX = x;
-  this.positionY = y;
 }
