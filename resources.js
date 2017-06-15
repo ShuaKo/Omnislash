@@ -83,11 +83,16 @@ function Platform(){
   }
 
   this.enemySpawn = function(x,y){
+    if(this.enemySize > 0)
+      if((this.Fighter.positionX == x && this.enemies[0].positionX == x)||(this.Fighter.positionY == y && this.enemies[0].positionY == y))
+        return true;
     if(this.floor[x][y].isEnemy == false && !(this.Fighter.positionX == x && this.Fighter.positionY == y)){
       this.enemies.push(new EnemyPosition(x, y));
       this.floor[x][y].isEnemy = true;
       this.enemySize++;
+      return true;
     }
+    return false;
   }
 
   this.enemySpawn(16,5);
@@ -102,57 +107,69 @@ function Platform(){
   }
 
   this.addEnemy = function(){
-    if(this.enemySize > 0){
-      var posCheck = Math.floor((Math.random() * 2));
-      console.log("posCheck is " + posCheck);
-      console.log("EnemySize is" + this.enemySize);
-      switch(posCheck){
-        case 0:
-          if(this.enemySize > 1){
-            var last = this.enemies[this.enemySize-1].positionX;
-            var next = this.enemies[this.enemySize-2].positionX;
-          }
-          else{
-            var last = this.enemies[this.enemySize-1].positionX;
-            var next = this.Fighter.positionX;
-          }
-          console.log(last,next);
-          if(last > next && last < 20){
-            var pos = last + 1 + Math.floor((Math.random() * 20)%(20-last));
-          }
-          else if(last < next && last > 0){
-            var pos = Math.floor((Math.random() * last) );
-          }
-          else if(last == next){
-            var pos = Math.floor((Math.random() * 20) + 0);
-          }
-          console.log(pos);
-          this.enemySpawn(pos, this.enemies[this.enemySize-1].positionY);
-          break;
-        case 1:
-          if(this.enemySize > 1){
-            var last = this.enemies[this.enemySize-1].positionY;
-            var next = this.enemies[this.enemySize-2].positionY;
-          }
-          else{
-            var last = this.enemies[this.enemySize-1].positionY;
-            var next = this.Fighter.positionY;
-          }
-          console.log(last,next);
-          if(last > next && last < 10){
-            var pos = last + 1 + Math.floor((Math.random() * 10)%(10-last));
-          }
-          else if(last < next && last > 0){
-            var pos = Math.floor((Math.random() * last) );
-          }
-          else if(last == next){
-            var pos = Math.floor((Math.random() * 10) + 0);
-          }
-          console.log(pos);
-          this.enemySpawn(this.enemies[this.enemySize-1].positionX, pos);
-          break;
+    var addedEnemy = true;
+    var pos, last, next;
+    do{
+      if(this.enemySize > 0){
+        var posCheck = Math.floor((Math.random() * 2));
+        console.log("posCheck is " + posCheck);
+        console.log("EnemySize is" + this.enemySize);
+        switch(posCheck){
+          case 0:
+            if(this.enemySize > 1){
+              last = this.enemies[this.enemySize-1].positionX;
+              next = this.enemies[this.enemySize-2].positionX;
+            }
+            else{
+              last = this.enemies[this.enemySize-1].positionX;
+              next = this.Fighter.positionX;
+            }
+            console.log(last,next);
+            if(last > next && last < 20){
+              pos = last + 1 + Math.floor((Math.random() * 20)%(20-last));
+            }
+            else if(last < next && last > 0){
+              pos = Math.floor((Math.random() * last) );
+            }
+            else if(last == next){
+              pos = Math.floor((Math.random() * 20) + 0);
+            }
+            else {
+              pos = last;
+            }
+            console.log(pos);
+            if(this.enemySpawn(pos, this.enemies[this.enemySize-1].positionY))
+              addedEnemy = false;
+            break;
+          case 1:
+            if(this.enemySize > 1){
+              last = this.enemies[this.enemySize-1].positionY;
+              next = this.enemies[this.enemySize-2].positionY;
+            }
+            else{
+              last = this.enemies[this.enemySize-1].positionY;
+              next = this.Fighter.positionY;
+            }
+            console.log(last,next);
+            if(last > next && last < 10){
+              pos = last + 1 + Math.floor((Math.random() * 10)%(10-last));
+            }
+            else if(last < next && last > 0){
+              pos = Math.floor((Math.random() * last) );
+            }
+            else if(last == next){
+              pos = Math.floor((Math.random() * 10) + 0);
+            }
+            else {
+              pos = last;
+            }
+            console.log(pos);
+            if(this.enemySpawn(this.enemies[this.enemySize-1].positionX, pos))
+              addedEnemy = false;
+            break;
+        }
       }
-    }
+    }while(addedEnemy);
   }
 
   this.checkCollision = function(){

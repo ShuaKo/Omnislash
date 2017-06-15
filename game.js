@@ -32,12 +32,17 @@ document.onkeydown = function(event){
   }
 }
 
-var counter = 100;
-var speed = 5;
+var counter = 1000;
+var speed = 10;
+var spawnCount = 5;
+
 function Update(){
   if(counter <= 0){
-    counter = 100;
-    Game.addEnemy();
+    counter = 1000;
+    for(var i = 0; i < spawnCount; i++){
+      Game.addEnemy();
+    }
+    spawnCount++;
   }
   ctx.clearRect(0,0,900,500);
   Game.checkCollision();
